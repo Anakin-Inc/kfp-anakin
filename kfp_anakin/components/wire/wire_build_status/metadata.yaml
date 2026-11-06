@@ -1,0 +1,17 @@
+name: wire_build_status
+stability: alpha
+dependencies:
+  kubeflow:
+  - name: Pipelines
+    version: '>=2.15.0'
+  external_services:
+  - name: Anakin API
+    version: v1
+tags:
+- anakin
+- web_data
+- wire
+lastVerified: '2026-11-06T00:00:00Z'
+links:
+  documentation: https://anakin.io/docs/integrations/workflow/kubeflow
+  issue_tracker: https://github.com/Anakin-Inc/kfp-anakin/issues

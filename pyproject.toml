@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kfp-anakin"
+dynamic = ["version"]
+description = "Kubeflow Pipelines components for Anakin: scrape, crawl, search, Wire site actions, website monitors and AI browser tasks"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Anakin", email = "support@anakin.io" }]
+keywords = ["kubeflow", "kfp", "kubeflow-pipelines", "anakin", "web-scraping", "crawler", "web-data"]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Scientific/Engineering",
+    "Topic :: System :: Distributed Computing",
+]
+requires-python = ">=3.10,<4.0"
+# anakin-sdk is deliberately absent: it runs in the task's pod (see
+# kfp_anakin/_runtime.py), not where the pipeline is compiled.
+dependencies = [
+    # 2.15 added `additional_funcs`, which embeds the shared helpers.
+    "kfp>=2.15.2,<3.0.0",
+    "kfp-kubernetes>=2.15.2,<3.0.0",
+]
+
+[project.urls]
+Homepage = "https://anakin.io"
+Documentation = "https://anakin.io/docs/integrations/workflow/kubeflow"
+Repository = "https://github.com/Anakin-Inc/kfp-anakin"
+Issues = "https://github.com/Anakin-Inc/kfp-anakin/issues"
+Changelog = "https://github.com/Anakin-Inc/kfp-anakin/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+test = [
+    "pytest>=8.0.0,<10.0.0",
+    "pyyaml>=6",
+    "anakin-sdk>=0.2.0,<0.3.0",
+]
+lint = [
+    "ruff>=0.6",
+    "mypy>=1.10.0,<2.0.0",
+    "types-PyYAML",
+]
+
+[tool.hatch.version]
+path = "kfp_anakin/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kfp_anakin"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/.github", "/SUBMIT.md"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]
+# KFP reads component signatures at import time: it needs `str = None` for an
+# optional input and typing.NamedTuple called inline for several outputs.
+extend-ignore = ["RUF013", "UP014", "F821"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kfp_anakin"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --strict-config"
+
+[tool.mypy]
+disallow_untyped_defs = false
+ignore_missing_imports = true
+# Components declare `str = None` and call helpers that are untyped on purpose.
+implicit_optional = true
+
+# KFP needs the inline NamedTuple("Outputs", [...]) return annotation.
+[[tool.mypy.overrides]]
+module = ["kfp_anakin.components.web_data.search.*", "kfp_anakin.components.web_data.map_site.*"]
+disable_error_code = ["valid-type"]
